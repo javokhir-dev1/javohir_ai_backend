@@ -1,0 +1,38 @@
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
+
+@Table
+export class User extends Model {
+  @Column({
+    type: DataType.INTEGER,
+    unique: true
+  })
+  telegram_id: number;
+
+  @Column({
+    type: DataType.STRING
+  })
+  fullname: string;
+
+  @Column({
+    type: DataType.STRING,
+    unique: true
+  })
+  phone_number: string;
+
+  @Column({
+    type: DataType.STRING,
+    unique: true
+  })
+  username: string
+
+  @Column({
+    type: DataType.STRING,
+    defaultValue: false
+  })
+  is_verified: boolean;
+
+  @Column({
+    type: DataType.STRING
+  })
+  otp: string;
+}
