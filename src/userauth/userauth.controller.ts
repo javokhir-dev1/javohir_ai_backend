@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { UserauthService } from './userauth.service';
 import { LoginDto } from './dto/login.dto';
-import { GetOtp } from './dto/get-otp.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @Controller('userauth')
 export class UserauthController {
@@ -11,8 +11,8 @@ export class UserauthController {
     return this.userauthService.login(loginDto);
   }
 
-  @Post("get-otp")
-  getOtp(@Body() getOtp: GetOtp) {
-    return this.userauthService.getOtp(getOtp);
+  @Post("register")
+  register(@Body() registerDto: RegisterDto) {
+    return this.userauthService.register(registerDto);
   }
 }

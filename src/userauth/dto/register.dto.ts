@@ -1,6 +1,6 @@
 import { IsString } from "class-validator";
 
-export class GetOtp {
+export class RegisterDto {
     @IsString()
     telegram_id: number;
 
