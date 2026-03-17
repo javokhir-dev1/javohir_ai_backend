@@ -24,15 +24,4 @@ export class User extends Model {
     unique: true
   })
   username: string
-
-  @Column({
-    type: DataType.STRING,
-    defaultValue: false
-  })
-  is_verified: boolean;
-
-  @Column({
-    type: DataType.STRING
-  })
-  otp: string;
 }

@@ -26,12 +26,12 @@ export class UsersService {
       throw new NotFoundException("User not created")
     }
 
-    return { message: "user created successfully", user: newUser }
+    return { status: "success", message: "user created successfully", user: newUser }
   }
 
   async findAll() {
     const users = await this.userModel.findAll()
-    return users;
+    return { status: "success", message: "Users found", users };
   }
 
   async findOne(id: number) {
@@ -39,15 +39,23 @@ export class UsersService {
     if (!user) {
       throw new UnauthorizedException("User not registered")
     }
-    return user
+    return { status: "success", message: "User found", user }
+  }
+
+  async findOneByTelegramId(telegram_id: string) {
+    const user = await this.userModel.findOne({ where: { telegram_id } })
+    if (!user) {
+      throw new UnauthorizedException("User not registered")
+    }
+    return { status: "success", message: "User found", user }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.findOne(id)
+    const { user } = await this.findOne(id)
 
     const updatedUser = await user.update(updateUserDto)
 
-    return updatedUser
+    return { status: "success", message: "User updated successfully", user: updatedUser }
   }
 
   async remove(id: number) {
@@ -55,6 +63,6 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException("User not found")
     }
-    return { message: "User deleted successfully", user }
+    return { status: "success", message: "User deleted successfully", user }
   }
 }

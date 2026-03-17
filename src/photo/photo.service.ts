@@ -1,19 +1,28 @@
 import { GoogleGenAI } from "@google/genai";
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { GeneratePhoto } from "./dto/GeneratePhoto.dto";
-import * as fs from "node:fs/promises"; 
+import * as fs from "node:fs/promises";
+import * as fssync from "node:fs";
 import * as path from "path";
 import { createReadStream, existsSync } from 'fs';
 import { join } from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { InjectModel } from "@nestjs/sequelize";
+import { Photo } from "./models/photo.model";
 
 @Injectable()
 export class PhotoService {
-  constructor(@Inject('AI_CLIENT_GEMINI') private readonly gemini: GoogleGenAI) { }
+  constructor(
+    @Inject('AI_CLIENT_GEMINI') private readonly gemini: GoogleGenAI,
+    @InjectModel(Photo) private readonly photoModel: typeof Photo
+  ) { }
 
   async generatePhoto(data: GeneratePhoto) {
+    const { text, telegram_id } = data
+
     const response = await this.gemini.models.generateContent({
       model: "gemini-3.1-flash-image-preview",
-      contents: data.text,
+      contents: text,
     });
 
     const uploadDir = path.join(process.cwd(), 'uploads');
@@ -23,28 +32,36 @@ export class PhotoService {
     } catch {
       await fs.mkdir(uploadDir, { recursive: true });
     }
-                                    
-    const part = response.candidates?.[0]?.content?.parts?.[0];
 
-    if (part?.inlineData?.data) { 
-      const fileName = `image_${Date.now()}.png`;
-      const filePath = path.join(process.cwd(), 'uploads', fileName);
+    for (const part of response.candidates?.[0]?.content?.parts || []) {
+      if (part.text) {
+        console.log(part.text);
+      } else if (part.inlineData) {
+        const imageData = part.inlineData.data!;
 
-      const buffer = Buffer.from(part.inlineData.data as string, "base64");
-      await fs.writeFile(filePath, buffer);
+        const fileName = `${uuidv4()}.jpg`;
 
-      return `Rasm muvaffaqiyatli saqlandi: ${fileName}`;
+        const filePath = path.join(process.cwd(), 'uploads', fileName);
+
+        const buffer = Buffer.from(imageData, "base64");
+
+        await fs.writeFile(filePath, buffer);
+
+        await this.photoModel.create({ telegram_id, photo_id: fileName });
+
+        return { status: "success", message: "photo generated successfully", filename: fileName };  
+      }
     }
-
-    return "Rasm generatsiya qilinmadi."; 
+    return { status: "error", message: "photo generation failed" };
   }
 
   getPhoto(filename: string) {
-    const filePath = join(process.cwd(), 'uploads', filename); 
-
-    if (!existsSync(filePath)) {
+    const photoRecord = this.photoModel.findOne({ where: { photo_id: filename } });
+    if (!photoRecord) {
       throw new NotFoundException('Fayl topilmadi');
     }
+
+    const filePath = join(process.cwd(), 'uploads', filename);
 
     return createReadStream(filePath);
   }
