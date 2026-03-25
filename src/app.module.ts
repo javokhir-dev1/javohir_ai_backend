@@ -18,7 +18,7 @@ import { UserauthModule } from './userauth/userauth.module';
       host: 'localhost',
       port: 5432,
       username: process.env.DB_USER,
-      password: process.env.DB_PASS,
+      password: String(process.env.DB_PASS),
       database: process.env.DB_NAME,
       autoLoadModels: true,
       sync: { alter: true }
@@ -27,7 +27,7 @@ import { UserauthModule } from './userauth/userauth.module';
     PhotoModule,
 
     GeminiModule,
-
+    
     ChatbotModule,
 
     UsersModule,

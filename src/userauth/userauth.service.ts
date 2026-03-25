@@ -17,7 +17,7 @@ export class UserauthService {
     const payload = { telegram_id: user.telegram_id, id: user.id, role: "user" }
 
     const secretKey = process.env.JWT_SECRET!
-
+    
     const token = jwt.sign(payload, secretKey, { expiresIn: "1h" })
 
     return { status: "success", message: "Login successful", user, token }

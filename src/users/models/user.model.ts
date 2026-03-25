@@ -3,10 +3,10 @@ import { Column, DataType, Model, Table } from 'sequelize-typescript';
 @Table
 export class User extends Model {
   @Column({
-    type: DataType.INTEGER,
+    type: DataType.TEXT,
     unique: true
   })
-  telegram_id: number;
+  telegram_id: string;
 
   @Column({
     type: DataType.STRING

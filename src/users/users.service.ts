@@ -19,7 +19,6 @@ export class UsersService {
       telegram_id,
       phone_number,
       fullname,
-      is_verified: false,
     })
 
     if (!newUser) {

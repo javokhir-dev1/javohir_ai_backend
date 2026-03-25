@@ -20,7 +20,7 @@ export class ChatbotController {
     const stream = this.chatbotService.sendMessageText(data);
 
     for await (const chunk of stream) {
-      res.write(`data: ${chunk}\n\n`);
+      res.write(chunk)
     }
 
     res.end();

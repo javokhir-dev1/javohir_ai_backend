@@ -7,6 +7,7 @@ export class CreateUserDto {
   @IsString()
   fullname: string;
 
+  @IsOptional()
   @IsString()
   phone_number: string;
 
