@@ -6,6 +6,8 @@ import { PhotoModule } from './photo/photo.module';
 import { UsersModule } from './users/users.module';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { UserauthModule } from './userauth/userauth.module';
+import { ChatsModule } from './chats/chats.module';
+import { MessagesModule } from './messages/messages.module';
 
 @Module({
   imports: [
@@ -33,6 +35,10 @@ import { UserauthModule } from './userauth/userauth.module';
     UsersModule,
 
     UserauthModule,
+
+    ChatsModule,
+
+    MessagesModule,
   ],
 })
 

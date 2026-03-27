@@ -1,33 +1,79 @@
-import { Injectable } from '@nestjs/common';
+import { 
+  Injectable, 
+  UnauthorizedException, 
+  InternalServerErrorException, 
+  BadRequestException,
+  ConflictException
+} from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import jwt from "jsonwebtoken";
-import { UsersService } from 'src/users/users.service';
-import crypto from "crypto";
+import * as jwt from "jsonwebtoken"; 
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class UserauthService {
   constructor(private readonly userService: UsersService) { }
 
   async login(loginDto: LoginDto) {
-    const { telegram_id } = loginDto
+    try {
+      const { telegram_id } = loginDto;
 
-    const { user } = await this.userService.findOneByTelegramId(String(telegram_id))
+      const result = await this.userService.findOneByTelegramId(String(telegram_id));
+      const user = result.user;
 
-    const payload = { telegram_id: user.telegram_id, id: user.id, role: "user" }
+      const secretKey = process.env.JWT_SECRET;
+      if (!secretKey) {
+        throw new InternalServerErrorException("JWT configuration is missing on server");
+      }
 
-    const secretKey = process.env.JWT_SECRET!
-    
-    const token = jwt.sign(payload, secretKey, { expiresIn: "1h" })
+      const payload = { 
+        telegram_id: user.telegram_id, 
+        id: user.id, 
+        role: "user" 
+      };
 
-    return { status: "success", message: "Login successful", user, token }
+      const token = jwt.sign(payload, secretKey, { expiresIn: "1h" });
+
+      return { 
+        status: "success", 
+        message: "Login successful", 
+        user, 
+        token 
+      };
+
+    } catch (error) {
+      if (error.status === 404) {
+        throw new UnauthorizedException("User not registered. Please register first.");
+      }
+      
+      if (error instanceof UnauthorizedException || error instanceof InternalServerErrorException) {
+        throw error;
+      }
+      
+      throw new InternalServerErrorException("An error occurred during login");
+    }
   }
 
   async register(registerDto: RegisterDto) {
-    const { fullname, username, telegram_id, phone_number } = registerDto
+    try {
+      const result = await this.userService.create(registerDto);
 
-    const { user } = await this.userService.create({ fullname, username, telegram_id, phone_number })
+      return { 
+        status: "success", 
+        message: "Registration successful", 
+        user: result.user 
+      };
 
-    return { status: "success", message: "Registration successful", user }
+    } catch (error) {
+      if (error.status === 409) {
+        throw new ConflictException("User already exists with this data");
+      }
+
+      if (error instanceof ConflictException || error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException("An error occurred during registration");
+    }
   }
 }

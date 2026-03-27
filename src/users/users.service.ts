@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { 
+  Injectable, 
+  NotFoundException, 
+  ConflictException, 
+  BadRequestException,
+  InternalServerErrorException 
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './models/user.model';
@@ -12,56 +18,67 @@ export class UsersService {
   ) { }
 
   async create(createUserDto: CreateUserDto) {
-    const { fullname, username, telegram_id, phone_number } = createUserDto
+    try {
+      const existingUser = await this.userModel.findOne({
+        where: { telegram_id: createUserDto.telegram_id }
+      });
 
-    const newUser = await this.userModel.create({
-      username,
-      telegram_id,
-      phone_number,
-      fullname,
-    })
+      if (existingUser) {
+        throw new ConflictException("User with this Telegram ID already exists");
+      }
 
-    if (!newUser) {
-      throw new NotFoundException("User not created")
+      const newUser = await this.userModel.create({ ...createUserDto });
+      return { status: "success", message: "User created successfully", user: newUser };
+
+    } catch (error) {
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        throw new ConflictException("Phone number or username already taken");
+      }
+      if (error instanceof ConflictException) throw error;
+      throw new InternalServerErrorException("Error creating user");
     }
-
-    return { status: "success", message: "user created successfully", user: newUser }
   }
 
   async findAll() {
-    const users = await this.userModel.findAll()
+    const users = await this.userModel.findAll();
     return { status: "success", message: "Users found", users };
   }
 
   async findOne(id: number) {
-    const user = await this.userModel.findOne({ where: { id } })
+    const user = await this.userModel.findByPk(id);
     if (!user) {
-      throw new UnauthorizedException("User not registered")
+      throw new NotFoundException("User not found");
     }
-    return { status: "success", message: "User found", user }
+    return { status: "success", message: "User found", user };
   }
 
   async findOneByTelegramId(telegram_id: string) {
-    const user = await this.userModel.findOne({ where: { telegram_id } })
+    const user = await this.userModel.findOne({ where: { telegram_id } });
     if (!user) {
-      throw new UnauthorizedException("User not registered")
+      throw new NotFoundException("User not found by telegram_id");
     }
-    return { status: "success", message: "User found", user }
+    return { status: "success", message: "User found", user };
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const { user } = await this.findOne(id)
+    const { user } = await this.findOne(id);
 
-    const updatedUser = await user.update(updateUserDto)
-
-    return { status: "success", message: "User updated successfully", user: updatedUser }
+    try {
+      const updatedUser = await user.update(updateUserDto);
+      return { status: "success", message: "User updated successfully", user: updatedUser };
+    } catch (error) {
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        throw new ConflictException("New details already used by another user");
+      }
+      throw new InternalServerErrorException("Error updating user");
+    }
   }
 
   async remove(id: number) {
-    const user = await this.userModel.destroy({ where: { id } })
-    if (!user) {
-      throw new NotFoundException("User not found")
+    const deletedCount = await this.userModel.destroy({ where: { id } });
+    if (!deletedCount) {
+      throw new NotFoundException("User not found to delete");
     }
-    return { status: "success", message: "User deleted successfully", user }
+    return { status: "success", message: "User deleted successfully" };
   }
 }

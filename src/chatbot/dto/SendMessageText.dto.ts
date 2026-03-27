@@ -9,4 +9,7 @@ export class SendMessageText {
 
     @IsIn(['flash', 'pro'])
     model: AiModelType = "flash"
+
+    @IsNotEmpty()
+    chat_id: string
 }
