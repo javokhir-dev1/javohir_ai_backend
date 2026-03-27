@@ -11,5 +11,8 @@ export class SendMessageText {
     model: AiModelType = "flash"
 
     @IsNotEmpty()
-    chat_id: string
+    chat_id: number
+
+    @IsNotEmpty() 
+    user_id: number
 }

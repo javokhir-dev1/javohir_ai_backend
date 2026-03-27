@@ -1,8 +1,8 @@
-import { 
-  Injectable, 
-  NotFoundException, 
-  InternalServerErrorException, 
-  BadRequestException 
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  BadRequestException
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Message } from './models/message.model';
@@ -35,7 +35,7 @@ export class MessagesService {
     }
   }
 
-  async findAllByChat(chat_id: number) {
+   async findAllByChat(chat_id: number) {
     await this.chatsService.findOne(chat_id);
 
     try {
@@ -53,17 +53,42 @@ export class MessagesService {
     }
   }
 
+  async findAllByChatJson(chat_id: number) {
+    await this.chatsService.findOne(chat_id);
+
+    try {
+      const history = await this.messageModel.findAll({
+        where: { chat_id },
+        order: [['createdAt', 'ASC']],
+        raw: true,
+      });
+
+      const formattedHistory = history.map((msg: any) => ({
+        role: msg.role,
+        parts: [{ text: msg.text }],
+      }));
+
+      return {
+        status: 'success',
+        message: 'Chat history retrieved successfully',
+        history: formattedHistory
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Could not retrieve chat history');
+    }
+  }
+
   async remove(id: number) {
     try {
       const affectedRows = await this.messageModel.destroy({ where: { id } });
-      
+
       if (!affectedRows) {
         throw new NotFoundException(`Message with ID ${id} not found`);
       }
 
-      return { 
-        status: 'success', 
-        message: 'Message deleted successfully' 
+      return {
+        status: 'success',
+        message: 'Message deleted successfully'
       };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
