@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsIn } from 'class-validator';
+import { IsString, IsNotEmpty, IsIn, IsOptional, IsNumber } from 'class-validator';
 
 export type AiModelType = 'flash' | 'pro';
 
@@ -10,8 +10,10 @@ export class SendMessageText {
     @IsIn(['flash', 'pro'])
     model: AiModelType = "flash"
 
-    @IsNotEmpty()
+    @IsNumber()
+    @IsOptional()
     chat_id: number
+
 
     @IsNotEmpty() 
     user_id: number

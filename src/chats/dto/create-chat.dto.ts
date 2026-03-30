@@ -1,9 +1,9 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateChatDto {
-  @IsString({ message: 'User ID must be a string' })
-  @IsNotEmpty({ message: 'User ID cannot be empty' })
-  readonly user_id: string;
+  @IsNumber()
+  @IsNotEmpty()
+  readonly user_id: number;
 
   @IsString({ message: 'Chat title must be a string' })
   @IsOptional()

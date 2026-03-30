@@ -8,6 +8,8 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { UserauthModule } from './userauth/userauth.module';
 import { ChatsModule } from './chats/chats.module';
 import { MessagesModule } from './messages/messages.module';
+import { PhotoTemplatesModule } from './photo_templates/photo_templates.module';
+import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
@@ -39,6 +41,10 @@ import { MessagesModule } from './messages/messages.module';
     ChatsModule,
 
     MessagesModule,
+
+    PhotoTemplatesModule,
+
+    VideoModule,
   ],
 })
 

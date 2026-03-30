@@ -6,7 +6,7 @@ export class Chat extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  user_id: string;
+  user_id: number;
 
   @Column({
     type: DataType.STRING,

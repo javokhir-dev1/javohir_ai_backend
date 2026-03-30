@@ -21,7 +21,7 @@ export class Message extends Model {
     type: DataType.INTEGER,
     allowNull: false,
   })
-  chat_id: number;
+  chat_id: string;
 
   @BelongsTo(() => Chat)
   chat: Chat;
@@ -31,7 +31,7 @@ export class Message extends Model {
     type: DataType.INTEGER,
     allowNull: false,
   })
-  user_id: number;
+  user_id: string;
 
   @BelongsTo(() => User)
   user: User;

@@ -2,10 +2,13 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/
 import { ChatbotService } from './chatbot.service';
 import { SendMessageText } from "./dto/SendMessageText.dto";
 import type { Response } from "express";
+import { CreateChatWithAIDTO } from './dto/create-chat.dto';
 
 @Controller('chatbot')
 export class ChatbotController {
-  constructor(private readonly chatbotService: ChatbotService) {}
+  constructor(
+    private readonly chatbotService: ChatbotService
+  ) {}
 
   @Post("gemini")
   async SendMessageText(@Body() data: SendMessageText, @Res() res: Response) {
@@ -20,9 +23,14 @@ export class ChatbotController {
     const stream = this.chatbotService.sendMessageText(data);
 
     for await (const chunk of stream) {
-      res.write(`data: ${chunk}\n\n`)
+      res.write(chunk)
     }
 
     res.end();
+  }
+
+  @Post("create-chat") 
+  async CreateChatWithAI(@Body() data: CreateChatWithAIDTO) {
+    return this.chatbotService.createChatWithAI(data)
   }
 }
